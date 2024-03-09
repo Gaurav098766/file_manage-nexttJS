@@ -1,6 +1,6 @@
 'use client'
 import { Button } from "@/components/ui/button";
-import { SignInButton, SignOutButton, SignedIn, SignedOut, useOrganization, useSession, useUser } from "@clerk/nextjs";
+import { useOrganization, useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
@@ -33,9 +33,6 @@ export default function Home() {
 
       <Button 
         onClick={()=> {
-          console.log(user)
-          console.log(organization)
-          console.log("hi")
           if(!orgId)return
           createFile({
             name:'hello world',

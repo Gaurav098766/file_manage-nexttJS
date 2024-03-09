@@ -1,4 +1,4 @@
-import { OrganizationSwitcher, SignInButton, SignedOut, UserButton } from "@clerk/nextjs";
+import { OrganizationSwitcher, SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 
 export const Header = () => {
@@ -11,6 +11,7 @@ export const Header = () => {
                 <div className="flex gap-2">
                     <OrganizationSwitcher/>
                     <UserButton/>
+                    {/* CLERK default signed out check: checks if the user is signed out then show clerk signinbutton which is wrapped inside a shadcnui button for designing. */}
                     <SignedOut>
                         <SignInButton>
                             <Button>
