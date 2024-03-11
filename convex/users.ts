@@ -12,7 +12,7 @@ export async function getUser(
         q.eq("tokenIdentifier", tokenIdentifier)
     )
     .first();
-    console.log("USER",user?.tokenIdentifier)
+    // console.log("USER",user?.tokenIdentifier)
 
     if(!user){
         throw new ConvexError("Expected user to defined!")
