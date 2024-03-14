@@ -5,7 +5,7 @@ import FileBrowserPage from "../_components/file_browser";
 export default function FavoritesPage() {
   return (
     <div>
-      <FileBrowserPage title="Your Favorites" favorites />
+      <FileBrowserPage title="Your Favorites" favoritesOnly />
     </div>
   );
 }

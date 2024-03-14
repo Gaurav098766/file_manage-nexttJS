@@ -28,10 +28,10 @@ function PlaceHolder() {
 
 export default function FileBrowserPage({
   title,
-  favorites,
+  favoritesOnly,
 }: {
   title: string;
-  favorites?: boolean;
+  favoritesOnly?: boolean;
 }) {
   const organization = useOrganization();
   const user = useUser();
@@ -42,9 +42,14 @@ export default function FileBrowserPage({
     orgId = organization.organization?.id ?? user.user?.id;
   }
 
+  const favorites = useQuery(
+    api.files.getAllFavorites,
+    orgId ? { orgId } : "skip"
+  );
+
   const files = useQuery(
     api.files.getFiles,
-    orgId ? { orgId, query, favorites } : "skip"
+    orgId ? { orgId, query, favorites: favoritesOnly } : "skip"
   );
 
   const isLoading = files === undefined;
@@ -66,11 +71,17 @@ export default function FileBrowserPage({
             <UploadButton />
           </div>
 
-          {files.length === 0 && <PlaceHolder />}
+          {files?.length === 0 && <PlaceHolder />}
 
           <div className="grid grid-cols-3 gap-4">
-            {files?.map((file: any) => {
-              return <FileCard key={file._id} file={file} />;
+            {files?.map((file) => {
+              return (
+                <FileCard
+                  favorites={favorites ?? []}
+                  key={file._id}
+                  file={file}
+                />
+              );
             })}
           </div>
         </>
