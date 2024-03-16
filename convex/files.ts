@@ -4,6 +4,7 @@ import {MutationCtx, QueryCtx, mutation, query} from './_generated/server'
 import { getUser } from './users';
 import { fileTypes } from './schema';
 import { Id } from './_generated/dataModel';
+import { useId } from 'react';
 
 export const generateUploadUrl = mutation(async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -14,34 +15,83 @@ export const generateUploadUrl = mutation(async (ctx) => {
     return await ctx.storage.generateUploadUrl();
 });
 
-export const hasAccessOrg = async(
+// export const hasAccessOrg = async(
+//     ctx: QueryCtx | MutationCtx,
+//     orgId: string
+// )=>{
+//     const identity = await ctx.auth.getUserIdentity()
+
+//      if(!identity){
+//         return null
+//     }
+
+//     const user = await ctx.db
+//     .query("users")
+//     .withIndex("by_tokenIdentifier", (q)=> 
+//     q.eq("tokenIdentifier", identity.tokenIdentifier))
+//     .first()
+        
+//     console.log("USER",user)
+//     if(!user) return null
+//          // IMP: A user can has his 
+//             // i) own account and creating a file at that time the args.orgId is eg: user_2dReKtJEYWomTi0HWnyZdtqXgwx so the user tokenidentifier will be matched in this case beavuse userid and orgid will never match(2nd condition of hasaccess will be matched)
+//             // ii) when user is in some organization and creating a file at that time the args.orgId is eg: org_2dReN6nyGvhsecxzWInmw0NBFr2 so the user.orgIds will be matched in this case beavuse user.identifiertoken and orgid will never match(1st condition of hasaccess will be matched)
+//         const hasAccess = 
+//             user.orgIds.some((item)=> item.orgId=== orgId) || 
+//             user.tokenIdentifier.includes(orgId)
+        
+//         if(!hasAccess)return null;
+//         return {user};
+// }
+
+export async function hasAccessOrg(
     ctx: QueryCtx | MutationCtx,
     orgId: string
-)=>{
-    const identity = await ctx.auth.getUserIdentity()
-
-     if(!identity){
-        return null
+  ) {
+    const identity = await ctx.auth.getUserIdentity();
+    console.log("IDENTITY",identity)
+    
+    if (!identity) {
+      return null;
     }
-
+    
     const user = await ctx.db
-    .query("users")
-    .withIndex("by_tokenIdentifier", (q)=> 
-    q.eq("tokenIdentifier", identity.tokenIdentifier))
-    .first()
-        
-    console.log("USER",user)
-    if(!user) return null
-         // IMP: A user can has his 
-            // i) own account and creating a file at that time the args.orgId is eg: user_2dReKtJEYWomTi0HWnyZdtqXgwx so the user tokenidentifier will be matched in this case beavuse userid and orgid will never match(2nd condition of hasaccess will be matched)
-            // ii) when user is in some organization and creating a file at that time the args.orgId is eg: org_2dReN6nyGvhsecxzWInmw0NBFr2 so the user.orgIds will be matched in this case beavuse user.identifiertoken and orgid will never match(1st condition of hasaccess will be matched)
-        const hasAccess = 
-            user.orgIds.includes(orgId) || 
-            user.tokenIdentifier.includes(orgId)
-        
-        if(!hasAccess)return null;
-        return {user};
-}
+      .query("users")
+      .withIndex("by_tokenIdentifier", (q) =>
+      q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .first();
+
+      console.log("tokengaurav", user?.tokenIdentifier)
+      
+      console.log("USER",user)
+      if (!user) {
+        return null;
+      }
+
+      console.log("user.orgIds",user.orgIds)
+      
+      const hasAccess =
+      user.orgIds.some((item) => item.orgId === orgId) ||
+      user.tokenIdentifier.includes(orgId) || user.tokenIdentifier.includes(identity.tokenIdentifier)
+
+      // const hasAccess =
+      // user.orgIds.some((item:any) => {
+      //     console.log(item);
+      //     return item === orgId;
+      // }) ||
+      // user.tokenIdentifier.includes(orgId);
+
+      
+      console.log("ARGUMENT",orgId)
+      console.log("HAS",hasAccess)
+  
+    if (!hasAccess) {
+      return null;
+    }
+  
+    return { user };
+  }
 
 export const createFile = mutation({
     args:{
@@ -120,6 +170,17 @@ export const deleteFile = mutation({
         if(!access){
             throw new ConvexError("You do not have access to this file")
         }
+
+        console.log("accessUSER",access.user)
+        console.log("accessUSERFILE",access.file)
+
+        const isAdmin = access.user.orgIds.find(org => org.orgId === access.file.orgId) ?.role==='admin'
+        
+        console.log("isADMIN",isAdmin)
+        if(!isAdmin){
+          throw new ConvexError("You do not have admin access to this file")
+        }
+        
         await ctx.db.delete(args.fileId)
     
 }})
