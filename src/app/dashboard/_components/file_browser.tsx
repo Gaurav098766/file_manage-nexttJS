@@ -5,9 +5,12 @@ import { api } from "../../../../convex/_generated/api";
 import UploadButton from "./upload-button";
 import { FileCard } from "./file-card";
 import Image from "next/image";
-import { Loader2 } from "lucide-react";
+import { Grid2X2Icon, Loader2, Table2Icon } from "lucide-react";
 import { SearchBar } from "./search-bar";
 import { useState } from "react";
+import { columns } from "./columns";
+import { DataTable } from "./file-table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function PlaceHolder() {
   return (
@@ -58,23 +61,30 @@ export default function FileBrowserPage({
 
   return (
     <div className="w-full">
-      {isLoading && (
-        <div className="flex flex-col gap-8 items-center w-full mt-24">
-          <Loader2 className="h-32 w-32 animate-spin text-gray-500" />
-          <div className="text-2xl">Loading your images....</div>
-        </div>
-      )}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold ">{title}</h1>
+        <SearchBar query={query} setQuery={setQuery} />
+        <UploadButton />
+      </div>
 
-      {!isLoading && (
-        <>
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-bold ">{title}</h1>
-            <SearchBar query={query} setQuery={setQuery} />
-            <UploadButton />
+      <Tabs defaultValue="grid">
+        <TabsList className="mb-2">
+          <TabsTrigger value="grid" className="flex gap-2">
+            <Grid2X2Icon />
+            Grid
+          </TabsTrigger>
+          <TabsTrigger value="table" className="flex gap-2">
+            <Table2Icon />
+            Table
+          </TabsTrigger>
+        </TabsList>
+        {isLoading && (
+          <div className="flex flex-col gap-8 items-center w-full mt-24">
+            <Loader2 className="h-32 w-32 animate-spin text-gray-500" />
+            <div className="text-2xl">Loading your images....</div>
           </div>
-
-          {files?.length === 0 && <PlaceHolder />}
-
+        )}
+        <TabsContent value="grid">
           <div className="grid grid-cols-3 gap-4">
             {files?.map((file) => {
               return (
@@ -86,8 +96,12 @@ export default function FileBrowserPage({
               );
             })}
           </div>
-        </>
-      )}
+        </TabsContent>
+        <TabsContent value="table">
+          <DataTable columns={columns} data={files} />
+        </TabsContent>
+      </Tabs>
+      {files?.length === 0 && <PlaceHolder />}
     </div>
   );
 }
